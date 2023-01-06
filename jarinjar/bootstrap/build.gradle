@@ -1,4 +1,0 @@
-dependencies {
-    api project(':runtime')
-    compileOnlyApi project(':jarinjar:jarinjar-common')
-}

@@ -2,9 +2,7 @@ rootProject.name = 'DependencyDownload'
 
 [
         'common',
-        'gradle-plugin',
         'runtime',
-        'jarinjar:common', 'jarinjar:bootstrap', 'jarinjar:loader'
 ].each {
     include it
     findProject(':' + it).name = String.join('-', it.split(':'))
