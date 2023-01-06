@@ -63,8 +63,8 @@ plugins {
 }
 
 dependencies {
-    runtimeDownload 'some:dependency:x.y.z'
-    runtimeDownloadOnly 'some.other:dependency:x.y.z'
+    runtimeDownload 'some:mavenObject:x.y.z'
+    runtimeDownloadOnly 'some.other:mavenObject:x.y.z'
 }
 
 jar.dependsOn generateRuntimeDownloadResourceForRuntimeDownloadOnly, generateRuntimeDownloadResourceForRuntimeDownload
@@ -82,7 +82,7 @@ manager.loadFromResource(getClass().getResource("runtimeDownloadOnly.txt"));
 
 ### Customizing 
 ```groovy
-import dev.vankka.dependencydownload.task.GenerateDependencyDownloadResourceTask
+import task.cc.maxmc.dependencydownload.GenerateDependencyDownloadResourceTask
 
 task generateResource(type: GenerateDependencyDownloadResourceTask) {
     configuration = project.configurations.runtimeDownload
@@ -95,7 +95,7 @@ task generateResource(type: GenerateDependencyDownloadResourceTask) {
 ## Download `jar-relocator` during runtime
 Bring the jar minifying to the next extreme
 ```groovy
-import dev.vankka.dependencydownload.task.GenerateDependencyDownloadResourceTask
+import task.cc.maxmc.dependencydownload.GenerateDependencyDownloadResourceTask
 plugins {
     id 'dev.vankka.dependencydownload.plugin' version '1.2.1'
 }
