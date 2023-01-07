@@ -10,18 +10,16 @@ import cc.maxmc.dependencydownload.path.DependencyPathProvider;
 import cc.maxmc.dependencydownload.path.DirectoryDependencyPathProvider;
 import cc.maxmc.dependencydownload.pom.PomManager;
 import cc.maxmc.dependencydownload.pom.PomParser;
+import cc.maxmc.dependencydownload.relocation.DefaultRelocationProvider;
+import cc.maxmc.dependencydownload.relocation.IRelocationProvider;
 import cc.maxmc.dependencydownload.relocation.Relocation;
 import cc.maxmc.dependencydownload.repository.Repository;
 import cc.maxmc.dependencydownload.resource.DependencyDownloadResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -238,64 +236,33 @@ public class DependencyManager {
         return forEachDependency(dependency -> downloadDependency(dependency, repositories), (dependency, cause) -> new RuntimeException("Failed to download dependency " + dependency.getMavenArtifact(), cause));
     }
 
-    /**
-     * Relocates all the dependencies with the relocations in this {@link DependencyManager}. This step is not required.
-     * Uses the {@link ClassLoader} that loaded this class to acquire {@code jar-relocator}.
-     *
-     * @return a future that will complete exceptionally if any of the dependencies fail to
-     * relocate otherwise completes when all dependencies are relocated
-     * @throws IllegalStateException if dependencies have already been queued for relocation once
-     * @see #relocateAll(ClassLoader)
-     * @see #relocate()
-     * @see #relocate(ClassLoader)
-     */
     public CompletableFuture<Void> relocateAll() {
-        return CompletableFuture.allOf(relocate(getClass().getClassLoader()));
-    }
-
-    /**
-     * Relocates all the dependencies with the relocations in this {@link DependencyManager}. This step is not required.
-     *
-     * @param jarRelocatorLoader the {@link ClassLoader} to use to load {@code jar-relocator},
-     *                           if this is set to {@code null} the current class loader will be used
-     * @return a future that will complete exceptionally if any of the dependencies fail to
-     * relocate otherwise completes when all dependencies are relocated
-     * @throws IllegalStateException if dependencies have already been queued for relocation once
-     * @see #relocateAll()
-     * @see #relocate()
-     * @see #relocate(ClassLoader)
-     */
-    public CompletableFuture<Void> relocateAll(@Nullable ClassLoader jarRelocatorLoader) {
-        return CompletableFuture.allOf(relocate(jarRelocatorLoader));
+        return CompletableFuture.allOf(relocate(new DefaultRelocationProvider(getClass().getClassLoader())));
     }
 
     /**
      * Relocates all the dependencies with the relocations in this {@link DependencyManager}. This step is not required.
      * Uses the {@link ClassLoader} that loaded this class to acquire {@code jar-relocator}.
-     * If one of the relocation fails, the rest will not be tried and will not get {@link CompletableFuture}s.
      *
-     * @return an array containing a {@link CompletableFuture} for at least one dependency but up to one for each dependency
+     * @return a future that will complete exceptionally if any of the dependencies fail to
+     * relocate otherwise completes when all dependencies are relocated
      * @throws IllegalStateException if dependencies have already been queued for relocation once
-     * @see #relocateAll(ClassLoader)
-     * @see #relocateAll()
-     * @see #relocate(ClassLoader)
+     * @see #relocate(IRelocationProvider)
      */
-    public CompletableFuture<Void>[] relocate() {
-        return relocate(getClass().getClassLoader());
+    public CompletableFuture<Void> relocateAll(IRelocationProvider provider) {
+        return CompletableFuture.allOf(relocate(provider));
     }
 
     /**
      * Relocates all the dependencies with the relocations in this {@link DependencyManager}. This step is not required.
      * If one of the relocation fails, the rest will not be tried and will not get {@link CompletableFuture}s.
      *
-     * @param jarRelocatorLoader the {@link ClassLoader} to use to load {@code jar-relocator}
+     * @param provider the relocation helper to use
      * @return an array containing a {@link CompletableFuture} for at least one dependency but up to one for each dependency
      * @throws IllegalStateException if dependencies have already been queued for relocation once
-     * @see #relocateAll(ClassLoader)
-     * @see #relocateAll()
-     * @see #relocate()
+     * @see #relocateAll(IRelocationProvider)
      */
-    public CompletableFuture<Void>[] relocate(@Nullable ClassLoader jarRelocatorLoader) {
+    public CompletableFuture<Void>[] relocate(@Nullable IRelocationProvider provider) {
         int currentStep = step.get();
         if (currentStep == 0) {
             throw new IllegalArgumentException("Download hasn't been executed");
@@ -304,8 +271,7 @@ public class DependencyManager {
         }
         step.set(2);
 
-        JarRelocatorHelper helper = new JarRelocatorHelper(jarRelocatorLoader != null ? jarRelocatorLoader : getClass().getClassLoader());
-        return forEachDependency(dependency -> relocateDependency(dependency, helper), (dependency, cause) -> new RuntimeException("Failed to relocate dependency " + dependency.getMavenArtifact(), cause));
+        return forEachDependency(dependency -> relocateDependency(dependency, provider), (dependency, cause) -> new RuntimeException("Failed to relocate dependency " + dependency.getMavenArtifact(), cause));
     }
 
     /**
@@ -345,12 +311,10 @@ public class DependencyManager {
                     }
                     addDependencies(childDependencies);
 
-                    CompletableFuture<Object>[] completableFutures = childDependencies.stream().map((dep) -> loadTransitive(dep, repositories)).toArray(CompletableFuture[]::new);
+                    CompletableFuture<?>[] completableFutures = childDependencies.stream().map((dep) -> loadTransitive(dep, repositories)).toArray(CompletableFuture[]::new);
                     CompletableFuture<Void> futures = CompletableFuture.allOf(completableFutures);
 
-                    futures.whenCompleteAsync((comp, thr) -> {
-                        future.complete(null);
-                    });
+                    futures.whenCompleteAsync((comp, thr) -> future.complete(null));
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to download and check pom", e);
                 }
@@ -557,19 +521,13 @@ public class DependencyManager {
         }
     }
 
-    private void relocateDependency(JarMavenObject mavenObject, JarRelocatorHelper helper) {
+    private void relocateDependency(JarMavenObject mavenObject, IRelocationProvider helper) {
 
         Path dependencyFile = getPathForDependency(mavenObject, false);
         Path relocatedFile = getPathForDependency(mavenObject, true);
 
-        try {
-            if (!relocatedFile.toFile().exists()) {
-                helper.run(dependencyFile, relocatedFile, relocations);
-            }
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException("Failed to run relocation", e.getCause());
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException("Failed to initialize relocator", e);
+        if (!relocatedFile.toFile().exists()) {
+            helper.run(dependencyFile, relocatedFile, relocations);
         }
     }
 
@@ -588,38 +546,5 @@ public class DependencyManager {
     private interface ExceptionalConsumer<T> {
 
         void run(T t) throws Throwable;
-    }
-
-    private static class JarRelocatorHelper {
-
-        private final Constructor<?> relocatorConstructor;
-        private final Method relocatorRunMethod;
-
-        private final Constructor<?> relocationConstructor;
-
-        public JarRelocatorHelper(ClassLoader classLoader) {
-            try {
-                Class<?> relocatorClass = classLoader.loadClass("me.lucko.jarrelocator.JarRelocator");
-                this.relocatorConstructor = relocatorClass.getConstructor(File.class, File.class, Collection.class);
-                this.relocatorRunMethod = relocatorClass.getMethod("run");
-
-                Class<?> relocationClass = classLoader.loadClass("me.lucko.jarrelocator.Relocation");
-                this.relocationConstructor = relocationClass.getConstructor(String.class, String.class, Collection.class, Collection.class);
-            } catch (ClassNotFoundException | NoSuchMethodException e) {
-                throw new RuntimeException("Failed to load jar-relocator from the provided ClassLoader", e);
-            }
-        }
-
-        public void run(Path from, Path to, Set<Relocation> relocations) throws ReflectiveOperationException {
-            Set<Object> mappedRelocations = new HashSet<>();
-
-            for (Relocation relocation : relocations) {
-                Object mapped = relocationConstructor.newInstance(relocation.getPattern(), relocation.getShadedPattern(), relocation.getIncludes(), relocation.getExcludes());
-                mappedRelocations.add(mapped);
-            }
-
-            Object relocator = relocatorConstructor.newInstance(from.toFile(), to.toFile(), mappedRelocations);
-            relocatorRunMethod.invoke(relocator);
-        }
     }
 }
