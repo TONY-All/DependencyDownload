@@ -43,8 +43,8 @@ subprojects {
 
                     scm {
                         connection.set("scm:git:https://github.com/tony-all/DependencyDownload.git")
-                        developerConnection.set("scm:git:https://github.com/Vankka/DependencyDownload.git")
-                        url.set("https://github.com/Vankka/DependencyDownload")
+                        developerConnection.set("scm:git:https://github.com/tony-all/DependencyDownload.git")
+                        url.set("https://github.com/tony-all/DependencyDownload")
                     }
 
                     developers {
