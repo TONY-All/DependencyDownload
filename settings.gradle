@@ -1,9 +1,0 @@
-rootProject.name = 'DependencyDownload'
-
-[
-        'common',
-        'runtime',
-].each {
-    include it
-    findProject(':' + it).name = String.join('-', it.split(':'))
-}
