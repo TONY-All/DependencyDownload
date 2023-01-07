@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 /**
  * An interface extending {@link DependencyPathProvider} to provide a cleanup path for the {@link DependencyManager}.
- * {@link DependencyManager#cleanupCacheDirectory()} requires the use of this interface in {@link DependencyManager#DependencyManager(DependencyPathProvider, FileDownloader)}  DependencyManager}.
+ * {@link DependencyManager#cleanupCacheDirectory()} requires the use of this interface in {@link DependencyManager#DependencyManager(DependencyPathProvider, FileDownloader, java.util.concurrent.Executor)}  DependencyManager}.
  */
 public interface CleanupPathProvider extends DependencyPathProvider {
 

@@ -14,9 +14,6 @@ public abstract class BaseMavenObject implements MavenObject {
     private final String hash;
     private final String hashingAlgorithm;
 
-    public BaseMavenObject(String mavenDependency) {
-        this(mavenDependency, null, "md5");
-    }
 
     public BaseMavenObject(String mavenDependency, String hash, String hashingAlgorithm) {
         String[] split = mavenDependency.split(":");
@@ -39,10 +36,6 @@ public abstract class BaseMavenObject implements MavenObject {
         } catch (Exception e) {
             throw new IllegalArgumentException("Maven dependency " + mavenDependency + " is not illegal.");
         }
-    }
-
-    public BaseMavenObject(String groupId, String artifactId, String version, String classifier) {
-        this(groupId, artifactId, version, classifier, null, "md5");
     }
 
     public BaseMavenObject(String groupId, String artifactId, String version, String classifier, String hash, String hashingAlgorithm) {

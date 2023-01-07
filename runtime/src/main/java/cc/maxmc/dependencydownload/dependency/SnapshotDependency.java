@@ -1,5 +1,6 @@
 package cc.maxmc.dependencydownload.dependency;
 
+import cc.maxmc.dependencydownload.pom.DependencyScope;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -9,22 +10,22 @@ public class SnapshotDependency extends JarMavenObject {
     private final String snapshotVersion;
 
     public SnapshotDependency(String mavenDependency, String snapshotVersion) {
-        super(mavenDependency);
+        super(mavenDependency, null, "md5", DependencyScope.COMPILE);
         this.snapshotVersion = snapshotVersion;
     }
 
     public SnapshotDependency(String mavenDependency, String snapshotVersion, String hash, String hashingAlgorithm) {
-        super(mavenDependency, hash, hashingAlgorithm);
+        super(mavenDependency, hash, hashingAlgorithm, DependencyScope.COMPILE);
         this.snapshotVersion = snapshotVersion;
     }
 
     public SnapshotDependency(String groupId, String artifactId, String version, String classifier, String snapshotVersion) {
-        super(groupId, artifactId, version, classifier);
+        super(groupId, artifactId, version, classifier, null, "md5", DependencyScope.COMPILE);
         this.snapshotVersion = snapshotVersion;
     }
 
     public SnapshotDependency(String groupId, String artifactId, String version, String classifier, String snapshotVersion, String hash, String hashingAlgorithm) {
-        super(groupId, artifactId, version, classifier, hash, hashingAlgorithm);
+        super(groupId, artifactId, version, classifier, hash, hashingAlgorithm, DependencyScope.COMPILE);
         this.snapshotVersion = snapshotVersion;
     }
 

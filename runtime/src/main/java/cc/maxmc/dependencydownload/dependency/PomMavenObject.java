@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class PomMavenObject extends BaseMavenObject {
     public PomMavenObject(String mavenDependency) {
-        super(mavenDependency);
+        super(mavenDependency, null, "md5");
     }
 
     public PomMavenObject(String mavenDependency, String hash, String hashingAlgorithm) {
@@ -12,7 +12,7 @@ public abstract class PomMavenObject extends BaseMavenObject {
     }
 
     public PomMavenObject(String groupId, String artifactId, String version, String classifier) {
-        super(groupId, artifactId, version, classifier);
+        super(groupId, artifactId, version, classifier, null, "md5");
     }
 
     public PomMavenObject(String groupId, String artifactId, String version, String classifier, String hash, String hashingAlgorithm) {

@@ -3,10 +3,11 @@ package cc.maxmc.dependencydownload.common.util;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -14,17 +15,19 @@ import java.security.NoSuchAlgorithmException;
  * A helper class to get standard hashes from {@link MessageDigest}s and {@link File}s.
  */
 @ApiStatus.Internal
-public final class HashUtil {
+public final class HashUtils {
 
-    private HashUtil() {}
+    private HashUtils() {
+    }
 
     /**
      * Gets the hash of the provided file
-     * @param file the file
+     *
+     * @param file      the file
      * @param algorithm the hashing algorithm (used on {@link MessageDigest#getInstance(String)})
      * @return the file's hash in standard format
      * @throws NoSuchAlgorithmException if the provided algorithm couldn't be found
-     * @throws IOException if reading the file was unsuccessful
+     * @throws IOException              if reading the file was unsuccessful
      */
     public static String getFileHash(File file, String algorithm) throws NoSuchAlgorithmException, IOException {
         MessageDigest digest = MessageDigest.getInstance(algorithm);
@@ -42,6 +45,7 @@ public final class HashUtil {
 
     /**
      * Gets the hash from the provided {@link MessageDigest}.
+     *
      * @param digest the message digest
      * @return the hash in standard format
      */
@@ -51,5 +55,19 @@ public final class HashUtil {
             result.append(String.format("%02x", b));
         }
         return result.toString();
+    }
+
+    public static String readFile(Path path) {
+        try (FileReader reader = new FileReader(path.toFile())) {
+            char[] buffer = new char[32];
+            int length;
+            StringBuilder result = new StringBuilder();
+            while ((length = reader.read(buffer)) != -1) {
+                result.append(buffer, 0, length);
+            }
+            return result.toString();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read " + path);
+        }
     }
 }

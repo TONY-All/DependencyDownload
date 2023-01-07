@@ -6,11 +6,12 @@ import cc.maxmc.dependencydownload.downloader.FileDownloader;
 import cc.maxmc.dependencydownload.relocation.Relocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Set;
 
 /**
- * Default dependency path provider, automatically used when using the {@link DependencyManager#DependencyManager(Path, FileDownloader)} constructor.
+ * Default dependency path provider, automatically used when using the {@link DependencyManager#DependencyManager(Path, FileDownloader, java.util.concurrent.Executor)} constructor.
  */
 public class DirectoryDependencyPathProvider implements CleanupPathProvider {
 
@@ -32,7 +33,7 @@ public class DirectoryDependencyPathProvider implements CleanupPathProvider {
 
     @Override
     public @NotNull Path getDependencyPath(@NotNull MavenObject mavenObject, Set<Relocation> relocations) {
-        Path path = cacheDirectory.resolve(mavenObject.getGroupId()).resolve(mavenObject.getArtifactId()).resolve(mavenObject.getVersion());
+        Path path = cacheDirectory.resolve(mavenObject.getGroupId().replaceAll("\\.", File.separator)).resolve(mavenObject.getArtifactId()).resolve(mavenObject.getVersion());
         if (relocations.isEmpty()) {
             return path.resolve(mavenObject.getStoredFileName());
         } else {
@@ -42,7 +43,7 @@ public class DirectoryDependencyPathProvider implements CleanupPathProvider {
 
     @Override
     public @NotNull Path getDependencyHashPath(@NotNull MavenObject mavenObject) {
-        Path path = cacheDirectory.resolve(mavenObject.getGroupId()).resolve(mavenObject.getArtifactId()).resolve(mavenObject.getVersion());
+        Path path = cacheDirectory.resolve(mavenObject.getGroupId().replaceAll("\\.", File.separator)).resolve(mavenObject.getArtifactId()).resolve(mavenObject.getVersion());
         return path.resolve(mavenObject.getHashFileName());
     }
 }

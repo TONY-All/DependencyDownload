@@ -11,6 +11,8 @@ import java.nio.file.Path;
 public class SingleThreadFileDownloader implements FileDownloader {
     @Override
     public void downloadFile(URL url, Path target) throws IOException {
+        System.out.println("Downloading " + url);
+        target.toFile().getParentFile().mkdirs();
         URLConnection connection = url.openConnection();
 
         byte[] buffer = new byte[4096];
