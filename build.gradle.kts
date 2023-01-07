@@ -69,8 +69,10 @@ subprojects {
                 name = "github"
                 credentials(PasswordCredentials::class.java)
             }
-            maven("https://repo.tabooproject.org/repository/releases/") {
+            maven("http://ptms.ink:8081/repository/releases/") {
+                isAllowInsecureProtocol = true
                 name = "taboolib"
+
                 credentials(PasswordCredentials::class.java)
             }
         }
