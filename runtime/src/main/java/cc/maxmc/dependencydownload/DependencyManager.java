@@ -236,6 +236,16 @@ public class DependencyManager {
         return forEachDependency(dependency -> downloadDependency(dependency, repositories), (dependency, cause) -> new RuntimeException("Failed to download dependency " + dependency.getMavenArtifact(), cause));
     }
 
+    /**
+     * Relocates all the dependencies with the relocations in this {@link DependencyManager}. This step is not required.
+     * Uses the {@link ClassLoader} that loaded this class to acquire {@code jar-relocator}.
+     *
+     * @return a future that will complete exceptionally if any of the dependencies fail to
+     * relocate otherwise completes when all dependencies are relocated
+     * @throws IllegalStateException if dependencies have already been queued for relocation once
+     * @see #relocateAll(IRelocationProvider)
+     * @see #relocate(IRelocationProvider)
+     */
     public CompletableFuture<Void> relocateAll() {
         return CompletableFuture.allOf(relocate(new DefaultRelocationProvider(getClass().getClassLoader())));
     }
@@ -244,9 +254,11 @@ public class DependencyManager {
      * Relocates all the dependencies with the relocations in this {@link DependencyManager}. This step is not required.
      * Uses the {@link ClassLoader} that loaded this class to acquire {@code jar-relocator}.
      *
+     * @param provider the relocation provider
      * @return a future that will complete exceptionally if any of the dependencies fail to
      * relocate otherwise completes when all dependencies are relocated
      * @throws IllegalStateException if dependencies have already been queued for relocation once
+     * @see #relocateAll()
      * @see #relocate(IRelocationProvider)
      */
     public CompletableFuture<Void> relocateAll(IRelocationProvider provider) {
