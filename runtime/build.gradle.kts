@@ -1,6 +1,6 @@
 dependencies {
     api(project(":common"))
-    implementation("me.lucko:jar-relocator:1.5")
+    implementation("me.lucko:jar-relocator:1.6")
 }
 
 tasks.jar {

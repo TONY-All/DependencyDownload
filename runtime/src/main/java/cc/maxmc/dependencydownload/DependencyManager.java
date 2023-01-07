@@ -327,6 +327,7 @@ public class DependencyManager {
                     CompletableFuture<Void> futures = CompletableFuture.allOf(completableFutures);
 
                     futures.whenCompleteAsync((comp, thr) -> future.complete(null));
+
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to download and check pom", e);
                 }
