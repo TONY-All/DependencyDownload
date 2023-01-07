@@ -61,7 +61,7 @@ public class PomManager {
     public boolean checkPomHash() throws NoSuchAlgorithmException, IOException {
         Path pomPath = manager.getDependencyPathProvider().getDependencyPath(pom, Collections.emptySet());
         Path pomHashPath = manager.getDependencyPathProvider().getDependencyHashPath(pom);
-        String pomFileHash = HashUtils.getFileHash(pomPath.toFile(), pom.getHashingAlgorithm());
+        String pomFileHash = HashUtils.getFileHash(pomPath, pom.getHashingAlgorithm());
 
         if (pom.getHash() != null) return pomFileHash.equals(pom.getHash());
 

@@ -518,7 +518,7 @@ public class DependencyManager {
     }
 
     private boolean checkDependencyHash(JarMavenObject mavenObject, Repository repo) throws NoSuchAlgorithmException, IOException {
-        String fileHash = HashUtils.getFileHash(getPathForDependency(mavenObject, false).toFile(), mavenObject.getHashingAlgorithm());
+        String fileHash = HashUtils.getFileHash(getPathForDependency(mavenObject, false), mavenObject.getHashingAlgorithm());
         if (mavenObject.getHash() != null) {
             return fileHash.equals(mavenObject.getHash());
         } else {

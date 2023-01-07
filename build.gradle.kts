@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 }
 
-version = "2.1.0"
+version = "2.1.1"
 
 subprojects {
     apply(plugin = "java")
@@ -61,7 +61,7 @@ subprojects {
 
         repositories {
             mavenLocal()
-            maven("https://repo.vip.maxmc.cc:30443/snapshots") {
+            maven("https://repo.vip.maxmc.cc:30443/releases") {
                 name = "mrepo"
                 credentials(PasswordCredentials::class.java)
             }

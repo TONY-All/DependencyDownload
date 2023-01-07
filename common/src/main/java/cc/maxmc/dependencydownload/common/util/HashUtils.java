@@ -1,7 +1,5 @@
 package cc.maxmc.dependencydownload.common.util;
 
-import org.jetbrains.annotations.ApiStatus;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 /**
  * A helper class to get standard hashes from {@link MessageDigest}s and {@link File}s.
  */
-@ApiStatus.Internal
 public final class HashUtils {
 
     private HashUtils() {
@@ -23,16 +20,16 @@ public final class HashUtils {
     /**
      * Gets the hash of the provided file
      *
-     * @param file      the file
+     * @param path      the file path
      * @param algorithm the hashing algorithm (used on {@link MessageDigest#getInstance(String)})
      * @return the file's hash in standard format
      * @throws NoSuchAlgorithmException if the provided algorithm couldn't be found
      * @throws IOException              if reading the file was unsuccessful
      */
-    public static String getFileHash(File file, String algorithm) throws NoSuchAlgorithmException, IOException {
+    public static String getFileHash(Path path, String algorithm) throws NoSuchAlgorithmException, IOException {
         MessageDigest digest = MessageDigest.getInstance(algorithm);
 
-        try (InputStream inputStream = Files.newInputStream(file.toPath())) {
+        try (InputStream inputStream = Files.newInputStream(path)) {
             byte[] buffer = new byte[1024];
             int total;
             while ((total = inputStream.read(buffer)) != -1) {
